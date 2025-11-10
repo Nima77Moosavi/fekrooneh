@@ -50,7 +50,7 @@ jobs:
       - name: Deploy to Liara (App)
         env:
           LIARA_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
-        run: liara deploy --app fekrooneh --api-token "$LIARA_TOKEN"
+        run: liara deploy --app fekrooneh-web --api-token "$LIARA_TOKEN" --no-app-logs
 
   consumer:
     if: github.ref_name == 'consumer'
@@ -72,4 +72,4 @@ jobs:
       - name: Deploy to Liara (Consumer)
         env:
           LIARA_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
-        run: liara deploy --app fekrooneh-consumer --api-token "$LIARA_TOKEN"
+        run: liara deploy --app fekrooneh-consumer --api-token "$LIARA_TOKEN" --no-app-logs
