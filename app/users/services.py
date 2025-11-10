@@ -1,9 +1,14 @@
+from datetime import date
+
+
 from sqlalchemy.ext.asyncio import AsyncSession
+from fastapi import HTTPException
+
+
 from .models import User
 from .schemas import UserCreate, UserUpdate
 from .repositories import UserRepository
-
-from fastapi import HTTPException
+from app.users.events import publish_leaderboard_event
 
 
 class UserService:
@@ -60,3 +65,64 @@ class UserService:
         Delete a user from the database.
         """
         return await self.repo.delete(user)
+
+    async def checkin(self, username: str) -> User:
+        """
+        Daily check-in logic:
+        - Updates streaks, XP, and frozen days.
+        - Publishes event to Redis.
+        """
+        user = await self.repo.get_by_username(username)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+
+        today = date.today()
+
+        # Already checked in today
+        if user.last_checkin == today:
+            raise HTTPException(
+                status_code=400, detail="Already checked in today")
+
+        if not user.last_checkin:
+            # First ever check-in
+            user.streak = 1
+        else:
+            delta = (today - user.last_checkin).days
+            if delta == 1:
+                # Consecutive day
+                user.streak += 1
+            elif delta > 1:
+                missed_days = delta - 1
+                if user.frozen_days >= missed_days:
+                    # Use frozen days to maintain streak
+                    user.frozen_days -= missed_days
+                    user.streak += 1
+                else:
+                    # Not enough frozen days → reset streak
+                    user.streak = 1
+                    user.frozen_days = 0
+
+        # Update max streak
+        if user.streak > user.max_streak:
+            user.max_streak = user.streak
+
+        # Add XP
+        user.xp += 10
+
+        # Update last_checkin date
+        user.last_checkin = today
+
+        # Save changes using repository
+        self.repo.db.add(user)
+        await self.repo.db.commit()
+        await self.repo.db.refresh(user)
+
+        # Publish event to Redis
+        await publish_leaderboard_event(
+            event_type="checkin",
+            user_id=user.id,
+            xp=user.xp,
+            streak=user.streak
+        )
+
+        return user

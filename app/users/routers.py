@@ -6,12 +6,14 @@ from app.users.dependencies import get_user_service
 
 router = APIRouter(prefix="/users", tags=["users"])
 
+
 @router.post("/", response_model=UserRead)
 async def create_user(
     payload: UserCreate,
     service: UserService = Depends(get_user_service)
 ):
     return await service.register_user(payload)
+
 
 @router.get("/{user_id}", response_model=UserRead)
 async def get_user(
@@ -22,6 +24,7 @@ async def get_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
+
 
 @router.put("/{user_id}", response_model=UserRead)
 async def update_user(
@@ -34,6 +37,7 @@ async def update_user(
         raise HTTPException(status_code=404, detail="User not found")
     return await service.update_user(user, payload)
 
+
 @router.delete("/{user_id}", response_model=UserRead)
 async def delete_user(
     user_id: int,
@@ -43,3 +47,16 @@ async def delete_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return await service.delete_user(user)
+
+
+@router.post("/{username}/checkin", response_model=UserRead)
+async def checkin_user(
+    username: str,
+    service: UserService = Depends(get_user_service)
+):
+    """
+    Daily check-in endpoint:
+    - Updates streaks, XP, and frozen days.
+    - Publishes leaderboard event to Redis.
+    """
+    return await service.checkin(username)
