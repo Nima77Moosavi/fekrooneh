@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 import redis.asyncio as redis
 
+
 REDIS_URL = "redis://redis-server:6379"  # use env var in prod
 LEADERBOARD_STREAM = "leaderboard_events"
 
