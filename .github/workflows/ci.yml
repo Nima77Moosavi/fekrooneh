@@ -5,6 +5,10 @@ on:
     branches:
       - web
       - consumer
+  pull_request:
+    branches:
+      - web
+      - consumer
 
 jobs:
   app:
