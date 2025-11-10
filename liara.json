@@ -1,5 +1,6 @@
 {
   "platform": "docker",
   "dockerfile": "Dockerfile",
+  "port": 8000,
   "command": "python consumers/leaderboard_consumer.py"
 }
