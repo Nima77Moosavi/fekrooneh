@@ -3,6 +3,8 @@ from .models import User
 from .schemas import UserCreate, UserUpdate
 from .repositories import UserRepository
 
+from fastapi import HTTPException
+
 
 class UserService:
     """
@@ -26,6 +28,13 @@ class UserService:
         Create a new user.
         Business rules (e.g., password hashing, uniqueness checks) can be added here.
         """
+        # check if username exists
+        existing = await self.repo.get_by_username(payload.username)
+        if existing:
+            raise HTTPException(
+                status_code=400,
+                detail="Username already exists"
+            )
         return await self.repo.create(payload)
 
     async def find_user_by_id(self, user_id: int) -> User | None:

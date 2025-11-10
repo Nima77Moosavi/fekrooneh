@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker, DeclarativeBase
 # Read Liara's DATABASE_URL from environment
 raw_url = os.getenv(
     "DATABASE_URL",
-    "postgresql://nima:secret123@db:5432/mydb"  # local fallback
+    "postgresql+asyncpg://nima:secret123@db:5432/mydb"
 )
 
 # Convert sync URL to async form for FastAPI
