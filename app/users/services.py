@@ -40,7 +40,17 @@ class UserService:
                 status_code=400,
                 detail="Username already exists"
             )
-        return await self.repo.create(payload)
+        user = await self.repo.create(payload)
+
+        # publish leaderboard event
+        await publish_leaderboard_event(
+            event_type="user_created",
+            user_id=user.id,
+            xp=user.xp,
+            streak=user.streak,
+        )
+
+        return user
 
     async def find_user_by_id(self, user_id: int) -> User | None:
         """

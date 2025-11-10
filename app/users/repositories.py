@@ -12,6 +12,7 @@ class UserRepository:
         user = User(
             username=payload.username,
             password=payload.password,
+            xp=payload.xp
         )
         self.db.add(user)
         await self.db.commit()
