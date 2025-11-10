@@ -10,6 +10,7 @@ router = APIRouter()
 
 
 
+
 app.include_router(users_router)
 app.include_router(leaderboard_router)
 
