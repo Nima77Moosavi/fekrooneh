@@ -12,7 +12,7 @@ on:
 
 jobs:
   app:
-    if: github.ref_name == 'web'
+    if: github.ref_name == 'app'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -32,31 +32,44 @@ jobs:
       DATABASE_URL: postgresql+asyncpg://postgres:postgres@localhost:5432/app_db
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
+
       - name: Install dependencies
         run: pip install -r requirements.txt
+
       - name: Apply migrations
         run: alembic upgrade head
-      - name: Deploy to Liara
-        run: |
-          curl -fsSL https://cli.liara.ir/install.sh | bash
-          liara deploy --app fekrooneh-web --api-token ${{ secrets.LIARA_API_TOKEN }}
+
+      - name: Install Liara CLI
+        run: npm install -g @liara/cli@7
+
+      - name: Deploy to Liara (App)
+        env:
+          LIARA_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+        run: liara deploy --app fekrooneh-web --api-token "$LIARA_TOKEN"
 
   consumer:
     if: github.ref_name == 'consumer'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
+
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Deploy to Liara
-        run: |
-          curl -fsSL https://cli.liara.ir/install.sh | bash
-          liara deploy --app fekrooneh-consumer --api-token ${{ secrets.LIARA_API_TOKEN }}
+
+      - name: Install Liara CLI
+        run: npm install -g @liara/cli@7
+
+      - name: Deploy to Liara (Consumer)
+        env:
+          LIARA_TOKEN: ${{ secrets.LIARA_API_TOKEN }}
+        run: liara deploy --app fekrooneh-consumer --api-token "$LIARA_TOKEN"
