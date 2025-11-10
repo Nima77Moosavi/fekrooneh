@@ -12,7 +12,7 @@ on:
 
 jobs:
   app:
-    if: github.ref_name == 'app'
+    if: github.ref_name == 'web'
     runs-on: ubuntu-latest
     services:
       postgres:
@@ -40,3 +40,23 @@ jobs:
         run: pip install -r requirements.txt
       - name: Apply migrations
         run: alembic upgrade head
+      - name: Deploy to Liara
+        run: |
+          curl -fsSL https://cli.liara.ir/install.sh | bash
+          liara deploy --app fekrooneh-web --api-token ${{ secrets.LIARA_API_TOKEN }}
+
+  consumer:
+    if: github.ref_name == 'consumer'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+      - name: Deploy to Liara
+        run: |
+          curl -fsSL https://cli.liara.ir/install.sh | bash
+          liara deploy --app fekrooneh-consumer --api-token ${{ secrets.LIARA_API_TOKEN }}
