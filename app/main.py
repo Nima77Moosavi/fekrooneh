@@ -3,6 +3,7 @@ from app.users.routers import router as users_router
 from app.leaderboard.routers import router as leaderboard_router
 
 
+
 app = FastAPI()
 
 router = APIRouter()
