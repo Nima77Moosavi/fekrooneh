@@ -3,16 +3,16 @@ name: CI/CD
 on:
   push:
     branches:
-      - web
+      - app
       - consumer
   pull_request:
     branches:
-      - web
+      - app
       - consumer
 
 jobs:
   app:
-    if: github.ref_name == 'web'
+    if: github.ref_name == 'app'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
