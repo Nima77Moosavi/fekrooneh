@@ -14,7 +14,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy app code, Alembic, and consumer
 COPY ./app /code/app
-COPY ./consumer /code/consumer
+COPY ./consumers /code/consumers
 COPY ./alembic.ini /code/
 COPY ./alembic /code/alembic
 
