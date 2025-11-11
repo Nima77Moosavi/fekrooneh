@@ -2,6 +2,7 @@ import asyncio
 import json
 import os
 import redis.asyncio as redis
+from redis.exceptions import ResponseError   # ✅ import exceptions from top-level
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://redis:6379")
 STREAM = "leaderboard_events"
@@ -15,7 +16,7 @@ async def main():
     # Create consumer group if not exists
     try:
         await r.xgroup_create(STREAM, GROUP, id="$", mkstream=True)
-    except redis.exceptions.ResponseError as e:
+    except ResponseError as e:   # ✅ use imported ResponseError
         if "BUSYGROUP" not in str(e):
             raise
 

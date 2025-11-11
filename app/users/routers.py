@@ -1,3 +1,5 @@
+import random
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.users.schemas import UserCreate, UserRead, UserUpdate
@@ -13,6 +15,30 @@ async def create_user(
     service: UserService = Depends(get_user_service)
 ):
     return await service.register_user(payload)
+
+
+@router.post("/seed/{count}", response_model=list[UserRead])
+async def seed_users(
+    count: int,
+    service: UserService = Depends(get_user_service)
+):
+    """Seed the database with `count` test users."""
+    users = []
+    for i in range(count):
+        payload = UserCreate(
+            username=f"user{i+1}",
+            password="password123",   # simple default for seeding
+            xp=random.randint(1, 100) * 10,
+            frozen_days=0,
+            streak=0,
+        )
+        try:
+            user = await service.register_user(payload)
+            users.append(user)
+        except HTTPException:
+            # skip duplicates, continue seeding
+            continue
+    return users
 
 
 @router.get("/{user_id}", response_model=UserRead)
@@ -60,3 +86,14 @@ async def checkin_user(
     - Publishes leaderboard event to Redis.
     """
     return await service.checkin(username)
+
+
+@router.post("/sync-redis")
+async def sync_users_to_redis(
+    service: UserService = Depends(get_user_service)
+):
+    """
+    Sync all users to Redis for leaderboard rebuild.
+    """
+    count = await service.sync_all_users_to_redis()
+    return {"message": f"{count} users synced to Redis"}
