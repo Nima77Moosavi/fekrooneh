@@ -12,7 +12,9 @@ class UserRepository:
         user = User(
             username=payload.username,
             password=payload.password,
-            xp=payload.xp
+            xp=payload.xp,
+            frozen_days=payload.frozen_days,
+            streak=payload.streak,
         )
         self.db.add(user)
         await self.db.commit()
@@ -26,6 +28,11 @@ class UserRepository:
     async def get_by_username(self, username: str) -> User | None:
         result = await self.db.execute(select(User).where(User.username == username))
         return result.scalar_one_or_none()
+
+    async def list_all(self) -> list[User]:
+        """Return all users."""
+        result = await self.db.execute(select(User))
+        return result.scalars().all()
 
     async def update(self, user: User, payload: UserUpdate) -> User:
         for field, value in payload.dict(exclude_unset=True).items():

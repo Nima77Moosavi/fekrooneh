@@ -35,7 +35,7 @@ async def seed_users(
         try:
             user = await service.register_user(payload)
             users.append(user)
-        except HTTPException as e:
+        except HTTPException:
             # skip duplicates, continue seeding
             continue
     return users
@@ -86,3 +86,14 @@ async def checkin_user(
     - Publishes leaderboard event to Redis.
     """
     return await service.checkin(username)
+
+
+@router.post("/sync-redis")
+async def sync_users_to_redis(
+    service: UserService = Depends(get_user_service)
+):
+    """
+    Sync all users to Redis for leaderboard rebuild.
+    """
+    count = await service.sync_all_users_to_redis()
+    return {"message": f"{count} users synced to Redis"}
