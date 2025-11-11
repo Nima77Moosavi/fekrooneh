@@ -75,6 +75,21 @@ class UserService:
         Delete a user from the database.
         """
         return await self.repo.delete(user)
+    
+    async def sync_all_users_to_redis(self) -> int:
+        """
+        Publish all users to Redis for leaderboard sync.
+        Returns the number of users synced.
+        """
+        users = await self.repo.list_all()  # implement list_all in UserRepository
+        for user in users:
+            await publish_leaderboard_event(
+                event_type="sync_user",
+                user_id=user.id,
+                xp=user.xp,
+                streak=user.streak,
+            )
+        return len(users)
 
     async def checkin(self, username: str) -> User:
         """
